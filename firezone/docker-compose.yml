@@ -1,0 +1,64 @@
+version: "3.7"
+
+services:
+  app:
+    image: firezone/firezone:${VERSION:-latest}
+    ports:
+      - ${WIREGUARD_PORT:-51820}:${WIREGUARD_PORT:-51820}/udp
+    environment:
+      DEFAULT_ADMIN_EMAIL: $ADMIN_EMAIL
+      DEFAULT_ADMIN_PASSWORD: $ADMIN_PASSWORD
+      EXTERNAL_URL: $EXTERNAL_URL
+      DATABASE_HOST: "postgres"
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: ${DATABASE_NAME:-firezone}
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?err}
+      VERSION: "latest"
+      GUARDIAN_SECRET_KEY: $GUARDIAN_SECRET_KEY
+      SECRET_KEY_BASE: $SECRET_KEY_BASE
+      LIVE_VIEW_SIGNING_SALT: $LIVE_VIEW_SIGNING_SALT
+      COOKIE_SIGNING_SALT: $COOKIE_SIGNING_SALT
+      COOKIE_ENCRYPTION_SALT: $COOKIE_ENCRYPTION_SALT
+      DATABASE_ENCRYPTION_KEY: $DATABASE_ENCRYPTION_KEY
+      WIREGUARD_IPV4_NETWORK: "100.64.0.0/10"
+      WIREGUARD_IPV4_ADDRESS: "100.64.0.1"
+
+    volumes:
+      - app-data:/var/firezone
+    cap_add:
+      # Needed for WireGuard and firewall support.
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      # Needed for masquerading and NAT.
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+    depends_on:
+      - postgres
+    networks:
+      - npm
+      - firezone-network
+
+  postgres:
+    image: postgres:15
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-firezone}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?err}
+    networks:
+      - firezone-network
+
+volumes:
+  postgres-data:
+  app-data:
+    driver: local
+
+networks:
+  nginx:
+    external: true
+  firezone-network:
+    external: true
