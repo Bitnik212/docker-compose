@@ -23,7 +23,6 @@ services:
       DATABASE_ENCRYPTION_KEY: $DATABASE_ENCRYPTION_KEY
       WIREGUARD_IPV4_NETWORK: "100.64.0.0/10"
       WIREGUARD_IPV4_ADDRESS: "100.64.0.1"
-
     volumes:
       - app-data:/var/firezone
     cap_add:
@@ -38,7 +37,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - npm
+      - nginx
       - firezone-network
 
   postgres:
