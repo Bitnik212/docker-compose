@@ -26,3 +26,6 @@ docker run --rm firezone/firezone bin/gen-env
  - COOKIE_ENCRYPTION_SALT, 
  - DATABASE_ENCRYPTION_KEY
 
+## Admin password
+
+After first boot **remove** environment variable **RESET_ADMIN_ON_BOOT**
